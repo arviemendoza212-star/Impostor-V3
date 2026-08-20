@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WHO IS THE IMPOSTOR? - Mobile Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+        :root {
+            --bg-color: #050811;
+            --card-bg: rgba(15, 23, 42, 0.75);
+            --accent-neon: #00ffcc;
+            --accent-neon-glow: rgba(0, 255, 204, 0.4);
+            --accent-pink: #ff007f;
+            --accent-pink-glow: rgba(255, 0, 127, 0.4);
+            --accent-purple: #8a2be2;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-neon: rgba(0, 255, 204, 0.25);
+            --border-pink: rgba(255, 0, 127, 0.3);
+            --danger: #ff3366;
+            --glass-surface: rgba(18, 26, 45, 0.65);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(138, 43, 226, 0.18) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(0, 255, 204, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(255, 0, 127, 0.08) 0%, transparent 60%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: 
+                linear-gradient(rgba(0, 255, 204, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 204, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 430px;
+            height: 100vh;
+            max-height: 850px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-neon);
+            box-shadow: 0 0 30px rgba(0, 255, 204, 0.1), inset 0 0 15px rgba(255, 0, 127, 0.05);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        @media (min-width: 431px) {
+            #game-container {
+                border-radius: 24px;
+                height: 90vh;
+            }
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            padding: 24px 20px;
+            overflow-y: auto;
+            z-index: 1;
+        }
+
+        .screen.active {
+            display: flex;
+            z-index: 10;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        h1, h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--accent-neon);
+            margin-bottom: 6px;
+            text-shadow: 0 0 12px var(--accent-neon-glow);
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.4;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .btn {
+            background: rgba(0, 255, 204, 0.05);
+            border: 2px solid var(--accent-neon);
+            color: var(--accent-neon);
+            padding: 14px 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 8px 0;
+            width: 100%;
+            text-align: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:active {
+            background: var(--accent-neon);
+            color: var(--bg-color);
+            box-shadow: 0 0 20px var(--accent-neon-glow);
+            transform: scale(0.98);
+        }
+
+        .btn-pink {
+            background: rgba(255, 0, 127, 0.05);
+            border-color: var(--accent-pink);
+            color: var(--accent-pink);
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.15);
+        }
+
+        .btn-pink:active {
+            background: var(--accent-pink);
+            color: #fff;
+            box-shadow: 0 0 20px var(--accent-pink-glow);
+        }
+
+        .btn-info {
+            background: rgba(138, 43, 226, 0.1);
+            border-color: var(--accent-purple);
+            color: #d8b4fe;
+            box-shadow: 0 0 10px rgba(138, 43, 226, 0.2);
+        }
+
+        .btn-info:active {
+            background: var(--accent-purple);
+            color: #fff;
+        }
+
+        label {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem !important;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            background: var(--glass-surface);
+            border: 1.5px solid var(--border-neon);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 14px;
+            outline: none;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent-neon);
+            box-shadow: 0 0 12px var(--accent-neon-glow);
+        }
+
+        select option {
+            background-color: #0c1220;
+            color: var(--text-main);
+        }
+
+        .link-box {
+            background: var(--glass-surface);
+            border: 1px solid var(--border-neon);
+            border-radius: 14px;
+            padding: 16px;
+            margin: 14px 0;
+            text-align: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .role-card-box {
+            background: linear-gradient(145deg, rgba(20, 29, 50, 0.9), rgba(10, 15, 28, 0.95));
+            border: 2px solid var(--accent-purple);
+            border-radius: 18px;
+            padding: 24px 18px;
+            text-align: center;
+            margin: auto 0;
+            box-shadow: 0 0 25px rgba(138, 43, 226, 0.3), inset 0 0 15px rgba(138, 43, 226, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .role-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin: 14px 0;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        .role-secret {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            color: var(--accent-neon);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 14px;
+            border: 1.5px dashed var(--border-neon);
+            font-weight: bold;
+            letter-spacing: 1px;
+            box-shadow: inset 0 0 10px rgba(0,255,204,0.1);
+        }
+
+        .alert-box {
+            background: rgba(255, 51, 102, 0.12);
+            border: 1px solid var(--danger);
+            color: #ff80a0;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            margin-top: 18px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(255, 51, 102, 0.15);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 8, 17, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--glass-surface);
+            border: 1.5px solid var(--accent-purple);
+            border-radius: 18px;
+            padding: 20px;
+            max-width: 380px;
+            width: 100%;
+            box-shadow: 0 0 25px rgba(138, 43, 226, 0.4);
+            text-align: left;
+        }
+
+        .how-to-play-content {
+            max-width: 390px;
+            max-height: min(88vh, 760px);
+            padding: 18px 16px 14px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 85% 10%, rgba(138,43,226,.16), transparent 32%),
+                radial-gradient(circle at 10% 90%, rgba(0,255,204,.08), transparent 30%),
+                rgba(12,18,32,.94);
+        }
+        .how-to-play-header { flex: 0 0 auto; text-align: center; padding: 2px 4px 12px; }
+        .how-to-play-kicker {
+            display: block; color: var(--accent-pink); font-family: 'Orbitron', sans-serif;
+            font-size: .62rem; font-weight: 800; letter-spacing: 2.2px; margin-bottom: 5px;
+        }
+        .how-to-play-scroll {
+            min-height: 0; overflow-y: auto; padding: 2px 3px 6px;
+        }
+        .how-to-section {
+            display: grid; grid-template-columns: 42px minmax(0,1fr); gap: 11px; align-items: start;
+            margin: 0 0 10px; padding: 12px 11px;
+            border: 1px solid rgba(0,255,204,.16); border-left: 2px solid rgba(0,255,204,.65);
+            border-radius: 13px;
+            background: linear-gradient(135deg, rgba(0,255,204,.045), rgba(138,43,226,.045));
+        }
+        .how-to-number {
+            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--accent-neon); border-radius: 9px; color: var(--accent-neon);
+            font-family: 'Orbitron', sans-serif; font-size: .72rem; font-weight: 800;
+            background: rgba(0,255,204,.055);
+        }
+        .how-to-text h4 {
+            margin: 1px 0 6px; color: #fff; font-family: 'Orbitron', sans-serif;
+            font-size: .72rem; line-height: 1.35; letter-spacing: .75px; text-transform: uppercase;
+        }
+        .how-to-text p {
+            margin: 0 0 7px; color: #cbd5e1; font-size: .86rem; line-height: 1.45;
+            text-align: left; user-select: text;
+        }
+        .how-to-close { flex: 0 0 auto; margin: 6px 0 0; }
+
+        #loading-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 40%, #0d1527 0%, #03050b 100%);
+            transition: opacity .8s ease, visibility .8s;
+        }
+        #loading-screen.hide {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loading-logo {
+            width: 130px; height: 130px; border: 3px solid var(--accent-neon); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; margin-bottom: 24px;
+            background: rgba(5, 10, 20, 0.85); box-shadow: 0 0 25px var(--accent-neon-glow);
+        }
+        .loading-logo::before { content: "👁"; font-size: 56px; }
+        .loading-title { font-family: 'Orbitron', sans-serif; font-size: 1.8rem; font-weight: 900; color: #fff; }
+        .loading-title span { color: var(--accent-pink); }
+        .loading-subtitle { font-family: 'Orbitron', sans-serif; color: var(--accent-neon); font-size: .8rem; margin-bottom: 32px; }
+        .loading-bar { width: 310px; height: 12px; padding: 2px; border: 1px solid var(--accent-neon); border-radius: 99px; background: rgba(0,0,0,0.6); }
+        .loading-progress { width: 0%; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink), var(--accent-neon)); }
+        .loading-status { margin-top: 14px; color: var(--text-muted); font-family: 'Orbitron', sans-serif; font-size: .75rem; }
+        .loading-percent { margin-top: 4px; color: #fff; font-family: 'Orbitron', sans-serif; font-size: .8rem; font-weight: 800; }
+        .loading-dev { position: absolute; bottom: 28px; color: rgba(255,255,255,0.5); font-family: 'Orbitron', sans-serif; font-size: .7rem; }
+    </style>
+</head>
+<body>
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen">
+        <div class="loading-logo"></div>
+        <div class="loading-title">WHO IS THE <span>IMPOSTOR?</span></div>
+        <div class="loading-subtitle">Mobile Edition</div>
+        <div class="loading-bar">
+            <div id="loading-progress" class="loading-progress" style="width:0%"></div>
+        </div>
+        <div id="loading-status" class="loading-status">Initializing game...</div>
+        <div id="loading-percent" class="loading-percent">0%</div>
+        <div class="loading-dev">DEVELOPED BY ARVIE</div>
+    </div>
+
+    <!-- HOW TO PLAY MODAL -->
+    <div id="modal-how-to-play" class="modal" aria-hidden="true">
+        <div class="modal-content how-to-play-content">
+            <div class="how-to-play-header">
+                <span class="how-to-play-kicker">MISSION PROTOCOL</span>
+                <h3>HOW TO PLAY</h3>
+            </div>
+            <div class="how-to-play-scroll">
+                <section class="how-to-section">
+                    <div class="how-to-number">01</div>
+                    <div class="how-to-text">
+                        <h4>HOST: GENERATE THE GAME</h4>
+                        <p>The Host generates the game session.</p>
+                    </div>
+                </section>
+                <section class="how-to-section">
+                    <div class="how-to-number">02</div>
+                    <div class="how-to-text">
+                        <h4>HOST: SHARE LINK TO GC</h4>
+                        <p>Click "Copy Link" or "Share to Messenger" so players can open it directly without downloading files manually.</p>
+                    </div>
+                </section>
+                <section class="how-to-section">
+                    <div class="how-to-number">03</div>
+                    <div class="how-to-text">
+                        <h4>PLAYER: OPEN & REVEAL</h4>
+                        <p>Players click the link, enter their name, select their assigned Slot Key, and tap "Reveal My Role".</p>
+                    </div>
+                </section>
+            </div>
+            <button class="btn btn-pink how-to-close" onclick="toggleHowToPlay(false)">Close</button>
+        </div>
+    </div>
+
+    <div id="game-container">
+        
+        <!-- 1. MAIN MENU -->
+        <div id="screen-main-menu" class="screen active">
+            <div style="margin: auto 0; text-align: center;">
+                <h1>WHO IS THE<br><span style="color: var(--accent-pink);">IMPOSTOR?</span></h1>
+                <p style="margin-bottom: 30px; font-weight: 600;">Group Chat Mobile Edition</p>
+                <button class="btn" onclick="goToScreen('screen-setup')">Create Game (Host)</button>
+            </div>
+        </div>
+
+        <!-- 2. GAME SETUP (HOST) -->
+        <div id="screen-setup" class="screen">
+            <h2>Game Setup</h2>
+            <p style="margin-bottom: 20px;">Configure your match settings:</p>
+            <label style="color: var(--text-muted); display:block; text-align:left; margin-bottom:6px;">Number of Players:</label>
+            <select id="player-count-select">
+                <option value="3">3 Players</option>
+                <option value="4">4 Players</option>
+                <option value="5">5 Players</option>
+                <option value="6" selected>6 Players</option>
+                <option value="7">7 Players</option>
+                <option value="8">8 Players</option>
+                <option value="9">9 Players</option>
+                <option value="10">10 Players</option>
+            </select>
+            <button class="btn" onclick="generateGameDownloadLink()">Generate Game Link</button>
+            <button class="btn btn-pink" onclick="goToScreen('screen-main-menu')">Back</button>
+            <button class="btn btn-info" onclick="toggleHowToPlay(true)">How to Play</button>
+        </div>
+
+        <!-- 3. HOST LINK DISPLAY SCREEN (UPDATED) -->
+        <div id="screen-host-link" class="screen">
+            <h2>Game Link Ready!</h2>
+            <p>Copy or share this link to your Messenger GC[cite: 1]. Players can open it instantly!</p>
+
+            <div class="link-box">
+                <input type="text" id="shareable-link-input" readonly style="font-size: 0.8rem; margin-bottom: 10px; background: rgba(0,0,0,0.3);">
+                
+                <!-- NEW BUTTONS ADDED HERE -->
+                <button class="btn" onclick="copyGameLink()">📋 Copy Link</button>
+                
+                
+                <!-- Optional fallback download button -->
+                <a id="download-game-btn" class="btn btn-pink" style="font-size: 0.75rem; padding: 10px;" download="game-session.html">Download File (Alternative)</a>
+            </div>
+            
+            <button class="btn btn-pink" onclick="hostPlayDirectly()">Play As Host Directly</button>
+            <button class="btn" onclick="startNewGameRound()">NEW GAME</button>
+        </div>
+
+        <!-- 4. PLAYER ENTER NAME & SLOT SCREEN -->
+        <div id="screen-enter-name" class="screen">
+            <div style="margin: auto 0; text-align: center;">
+                <h2>Join Game</h2>
+                <p style="margin-bottom: 20px;">Enter your name and select your assigned Player Slot.</p>
+                <input type="text" id="player-name-input" placeholder="Enter Name (e.g., Alex)" autocomplete="off">
+                <label style="color: var(--text-muted); display:block; text-align:left; margin-bottom:6px;">Your Assigned Slot:</label>
+                <select id="player-slot-select"></select>
+                <button class="btn" onclick="joinAndRevealRole()">Reveal My Role</button>
+                <button class="btn btn-pink" onclick="goToScreen('screen-host-link')">Back</button>
+            </div>
+        </div>
+
+        <!-- 5. PLAYER SECRET ROLE SCREEN -->
+        <div id="screen-player-role" class="screen">
+            <div class="role-card-box">
+                <p style="text-transform: uppercase; font-size: 0.85rem; font-family: 'Orbitron', sans-serif;">Player:</p>
+                <h3 id="player-own-name" style="color: var(--accent-neon); margin: 6px 0 12px 0; font-size: 1.5rem;">---</h3>
+                <div class="role-title" id="player-role-title">---</div>
+                <p id="player-desc-text" style="white-space: pre-line;">---</p>
+                <div class="role-secret" id="player-secret-word">---</div>
+                <div class="alert-box">
+                    <strong>Warning:</strong> Your role is locked on this device.
+                </div>
+                <button class="btn btn-pink" onclick="goToScreen('screen-host-link')">Back</button>
+            </div>
+        </div>
+
+        <!-- 6. ALREADY OPENED SCREEN -->
+        <div id="screen-already-opened" class="screen">
+            <div style="margin: auto 0; text-align: center;">
+                <h2 style="color: var(--danger);" id="lock-screen-title">Game Is Locked!</h2>
+                <p style="margin-top: 12px;" id="lock-screen-msg">You have already viewed your role for this round.</p>
+                <button class="btn" style="margin-top:24px;" onclick="startNewGameRound()">NEW GAME</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function startLoadingScreen() {
+            const screen = document.getElementById('loading-screen');
+            const progress = document.getElementById('loading-progress');
+            const status = document.getElementById('loading-status');
+            const percentText = document.getElementById('loading-percent');
+            if (!screen || !progress || !status) return;
+
+            let percent = 0;
+            const interval = setInterval(() => {
+                percent += 15;
+                if (percent > 100) percent = 100;
+                progress.style.width = percent + "%";
+                if (percentText) percentText.textContent = percent + "%";
+                if (percent === 100) {
+                    clearInterval(interval);
+                    setTimeout(() => screen.classList.add('hide'), 300);
+                }
+            }, 150);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startLoadingScreen);
+        } else {
+            startLoadingScreen();
+        }
+
+        function toggleHowToPlay(show) {
+            const modal = document.getElementById('modal-how-to-play');
+            if (show) modal.classList.add('active');
+            else modal.classList.remove('active');
+        }
+
+        const GAME_WORDS = [
+            "Dog",             "Cat",             "Lion",             "Tiger",             "Elephant",             "Monkey",             "Horse",             "Cow",
+            "Chicken",             "Rabbit",             "Turtle",             "Snake",             "Shark",             "Dolphin",             "Eagle",             "Owl",
+            "Parrot",             "Penguin",             "Zebra",             "Giraffe",             "Kangaroo",             "Panda",             "Wolf",             "Fox",
+            "Deer",             "Goat",             "Sheep",             "Pig",             "Mouse",             "Hamster",             "Squirrel",             "Bear",
+            "Gorilla",             "Crocodile",             "Alligator",             "Lizard",             "Frog",             "Toad",             "Whale",             "Seal",
+            "Otter",             "Beaver",             "Camel",             "Donkey",             "Buffalo",             "Bison",             "Moose",             "Elk",
+            "Antelope",             "Gazelle",             "Cheetah",             "Leopard",             "Jaguar",             "Hyena",             "Rhinoceros",             "Hippopotamus",
+            "Koala",             "Sloth",             "Badger",             "Raccoon",             "Skunk",             "Porcupine",             "Hedgehog",             "Bat",
+            "Mole",             "Rat",             "Cricket",             "Spider",             "Ant",             "Bee",             "Butterfly",             "Moth",
+            "Beetle",             "Ladybug",             "Grasshopper",             "Dragonfly",             "Mosquito",             "Fly",             "Wasp",             "Snail",
+            "Lobster",             "Crab",             "Shrimp",             "Octopus",             "Squid",             "Jellyfish",             "Starfish",             "Seahorse",
+            "Clownfish",             "Goldfish",             "Guppy",             "Salmon",             "Trout",             "Tuna",             "Sardine",             "Eel",
+            "Stingray",             "Swordfish",             "Marlin",             "Piranha",             "Flamingo",             "Peacock",             "Swan",             "Duck",
+            "Goose",             "Turkey",             "Rooster",             "Falcon",             "Hawk",             "Vulture",             "Crow",             "Raven",
+            "Sparrow",             "Robin",             "Pigeon",             "Dove",             "Seagull",             "Woodpecker",             "Hummingbird",             "Canary",
+            "Finch",             "Parakeet",             "Ostrich",             "Emu",             "Pelican",             "Stork",             "Heron",             "Crane",
+            "Quail",             "Pheasant",             "Chameleon",             "Iguana",             "Gecko",             "Komodo",             "Cobra",             "Viper",
+            "Python",             "Boa",             "Rattlesnake",             "Anaconda",             "Salamander",             "Newt",             "Axolotl",             "Tortoise",
+            "Walrus",             "Manatee",             "Narwhal",             "Orca",             "MantaRay",             "Weasel",             "Ferret",             "Mink",
+            "Wolverine",             "Lynx",             "Bobcat",             "Cougar",             "Puma",             "Ibex",             "Chamois",             "Reindeer",
+            "Warthog",             "Meerkat",             "Baboon",             "Chimpanzee",             "Orangutan",             "Lemur",             "Mandrill",             "Gibbon",
+            "Macaque",             "Mongoose",             "Opossum",             "Armadillo",             "Anteater",             "Aardvark",             "Tapir",             "Capybara",
+            "Marmot",             "Llama",             "Alpaca",             "Yak",             "Ox",             "Ram",             "Pony",             "Foal",
+            "Calf",             "Kitten",             "Puppy",             "Piglet",             "Lamb",             "Fawn",             "Duckling",             "Gosling",
+            "Chick",             "Magpie",             "Toucan",             "Macaw",             "Cockatoo",             "Albatross",             "Kiwi",             "Hen",
+            "Partridge",             "Swift",             "Swallow",             "Starling",             "Blackbird",             "Bluebird",             "Cardinal",             "Kingfisher",
+            "Kookaburra",             "Sparrowhawk",             "Roadrunner",             "SecretaryBird",             "Tarantula",             "Scorpion",             "Centipede",             "Millipede",
+            "Termite",             "Antlion",             "Caterpillar",             "Silkworm",             "Earthworm",             "Leech",             "Mantis",             "Cicada",
+            "Firefly",             "Tick",             "Flea",             "Louse",             "Weevil",             "Aphid",             "Locust",             "Katydid",
+            "Earwig",             "Silverfish",             "Bighorn",             "Jackal",             "Ocelot",             "Serval",             "Caribou",             "Wildebeest",
+            "Okapi",             "Pangolin",             "Platypus",             "Echidna",             "Cassowary",             "Ibis",             "Hoopoe",             "Coyote",
+            "Puffin",             "Egret",             "Chair",             "Table",             "Umbrella",             "Spoon",             "Fork",             "Glass",
+            "Plate",             "Cup",             "Mug",             "Bottle",             "Bowl",             "Knife",             "Scissors",             "Book",
+            "Pencil",             "Eraser",             "Ruler",             "Notebook",             "Backpack",             "Phone",             "Mirror",             "Clock",
+            "Fan",             "Bed",             "Pillow",             "Blanket",             "Soap",             "Towel",             "Toothbrush",             "Comb",
+            "Brush",             "Camera",             "Laptop",             "Computer",             "Keyboard",             "Monitor",             "Television",             "Radio",
+            "Speaker",             "Headphones",             "Microphone",             "Charger",             "Battery",             "Cable",             "Lamp",             "Candle",
+            "Lantern",             "Flashlight",             "Wallet",             "Purse",             "Key",             "Lock",             "Door",             "Window",
+            "Curtain",             "Carpet",             "Rug",             "Mat",             "Basket",             "Box",             "Bag",             "Suitcase",
+            "Briefcase",             "Hat",             "Cap",             "Shirt",             "Jacket",             "Pants",             "Socks",             "Shoes",
+            "Slippers",             "Belt",             "Watch",             "Ring",             "Necklace",             "Bracelet",             "Sunglasses",             "Helmet",
+            "Mask",             "Glove",             "Scarf",             "Tie",             "Apron",             "Button",             "Zipper",             "Hanger",
+            "Desk",             "Cabinet",             "Shelf",             "Drawer",             "Sofa",             "Couch",             "Stool",             "Bench",
+            "Mattress",             "Sheet",             "Pillowcase",             "TowelRack",             "Broom",             "Mop",             "Bucket",             "Dustpan",
+            "Sponge",             "Vacuum",             "Iron",             "Toaster",             "Kettle",             "Blender",             "Mixer",             "Pan",
+            "Pot",             "Tray",             "Saucer",             "Teapot",             "Thermos",             "Flask",             "Jar",             "Can",
+            "Tin",             "BottleOpener",             "CanOpener",             "Corkscrew",             "CuttingBoard",             "RollingPin",             "Spatula",             "Ladle",
+            "Whisk",             "Tongs",             "Peeler",             "Grater",             "Strainer",             "Colander",             "Chopsticks",             "Toothpick",
+            "Napkin",             "Tissue",             "Postcard",             "Envelope",             "Folder",             "Stapler",             "Paperclip",             "Clipboard",
+            "Calculator",             "Calendar",             "Marker",             "Crayon",             "Paintbrush",             "PaintRoller",             "GlueStick",             "GlueBottle",
+            "Tape",             "Compass",             "Protractor",             "ScissorsCase",             "Toolbox",             "Hammer",             "Screwdriver",             "Wrench",
+            "Pliers",             "Saw",             "Drill",             "Nail",             "Screw",             "Bolt",             "Nut",             "Washer",
+            "Hinge",             "Hook",             "Rope",             "Chain",             "Ladder",             "Wheelbarrow",             "Shovel",             "Rake",
+            "Hoe",             "Axe",             "Broomstick",             "BucketLid",             "WateringCan",             "Hose",             "Wheel",             "Tire",
+            "Bicycle",             "Scooter",             "Skateboard",             "RollerSkate",             "Ball",             "Globe",             "Racket",             "Net",
+            "Frisbee",             "Kite",             "Toy",             "Doll",             "Robot",             "Puzzle",             "Dice",             "Domino",
+            "Chessboard",             "Checkerboard",             "PictureFrame",             "Gamepad",             "Controller",             "Joystick",             "Drone",             "Tripod",
+            "Projector",             "Screen",             "Printer",             "Scanner",             "Router",             "Modem",             "Tablet",             "Smartwatch",
+            "Earbud",             "Remote",             "Antenna",             "AlarmClock",             "CameraStand",             "Bookshelf",             "Bookcase",             "CoatRack",
+            "ShoeRack",             "Clothesline",             "IroningBoard",             "Needle",             "Thread",             "Spool",             "Thimble",             "ButtonBox",
+            "NeedleThreader",             "ZipperBag",             "Lunchbox",             "PencilCase",             "CrayonBox",             "MarkerPen",             "Highlighter",             "Inkpot",
+            "Stamp",             "Sticker",             "CalendarPad",             "Diary",             "Journal",             "Bookmark",             "Keychain",             "CoinPurse",
+            "PiggyBank",             "Moneybox",             "Coin",             "Banknote"
+        ];
+
+        let currentGameData = null;
+        let generatedShareableURL = "";
+        // Tracks only the immediately previous word index so NEW GAME
+        // never starts with the same secret word as the previous round.
+        let lastWordIndex = -1;
+
+        function isDownloadedPlayerGame() {
+            return window.location.href.includes('#game=');
+        }
+
+        function updatePlayerNavigationVisibility() {
+            const playerGame = isDownloadedPlayerGame();
+            const joinBack = document.querySelector('#screen-enter-name button[onclick="goToScreen(\'screen-host-link\')"]');
+            const roleBack = document.querySelector('#screen-player-role button[onclick="goToScreen(\'screen-host-link\')"]');
+            if (joinBack) joinBack.style.display = playerGame ? 'none' : '';
+            if (roleBack) roleBack.style.display = playerGame ? 'none' : '';
+        }
+
+        function goToScreen(screenId) {
+            updatePlayerNavigationVisibility();
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function generateGameDownloadLink() {
+            const count = parseInt(document.getElementById('player-count-select').value);
+
+            // Pick a genuinely random word while preventing an immediate repeat.
+            let randomWordIdx = Math.floor(Math.random() * GAME_WORDS.length);
+            if (GAME_WORDS.length > 1) {
+                while (randomWordIdx === lastWordIndex) {
+                    randomWordIdx = Math.floor(Math.random() * GAME_WORDS.length);
+                }
+            }
+            lastWordIndex = randomWordIdx;
+
+            const impostorSlot = Math.floor(Math.random() * count);
+            const roomSeed = Math.floor(100000 + Math.random() * 900000); 
+
+            // Keep the selected word index bound to this exact game session/link.
+            currentGameData = { w: randomWordIdx, imp: impostorSlot, c: count, s: roomSeed };
+
+            // Bumuo ng URL gamit ang kasalukuyang URL + hash parameters para diretsong mabuksan ng mga player
+            const baseUrl = window.location.href.split('#')[0];
+            generatedShareableURL = `${baseUrl}#game=${randomWordIdx}-${impostorSlot}-${count}-${roomSeed}`;
+            
+            // Ilagay ang link sa input box para madaling makita o makopya
+            document.getElementById('shareable-link-input').value = generatedShareableURL;
+
+            // Panatilihin din ang blob download bilang backup kung gusto nila mag-download
+            const currentHTML = document.documentElement.outerHTML;
+            const injectedHTML = currentHTML.replace('<script>', `<script>window.location.hash="#game=${randomWordIdx}-${impostorSlot}-${count}-${roomSeed}";`);
+            const blob = new Blob([injectedHTML], { type: 'text/html;charset=utf-8' });
+            const gameUrl = URL.createObjectURL(blob);
+            const downloadBtn = document.getElementById('download-game-btn');
+            downloadBtn.href = gameUrl;
+            downloadBtn.download = `Who_Is_The_Impostor_${roomSeed}.html`;
+
+            goToScreen('screen-host-link');
+        }
+
+        // --- NEW FUNCTIONS PARA SA COPY AT MESSENGER SHARE ---
+        function copyGameLink() {
+            if (!generatedShareableURL) return;
+            navigator.clipboard.writeText(generatedShareableURL).then(() => {
+                alert("Link copied to clipboard! Pwede mo na itong i-paste sa Messenger GC[cite: 1].");
+            }).catch(err => {
+                // Fallback kung sakaling i-block ng mobile browser
+                const input = document.getElementById('shareable-link-input');
+                input.select();
+                document.execCommand('copy');
+                alert("Link copied!");
+            });
+        }
+
+        function shareToMessenger() {
+            if (!generatedShareableURL) return;
+            // Facebook/Messenger share web intent para diretso mag-share sa Messenger app
+            const messengerUrl = `fb-messenger://share?link=${encodeURIComponent(generatedShareableURL)}`;
+            const webMessengerUrl = `https://www.facebook.com/dialog/send?link=${encodeURIComponent(generatedShareableURL)}&app_id=291494419107518&redirect_uri=${encodeURIComponent(window.location.href)}`;
+            
+            // Subukang buksan ang Messenger app, kung sakali man ay may fallback sa web intent
+            window.location.href = messengerUrl;
+            setTimeout(() => {
+                window.open(webMessengerUrl, '_blank');
+            }, 500);
+        }
+
+        function hostPlayDirectly() {
+            if (currentGameData) {
+                setupSlotOptions(currentGameData.c);
+                const roomSeed = currentGameData.s;
+                const saved = localStorage.getItem('player_lock_' + roomSeed);
+                if (saved) {
+                    try { enforcePlayerLockUI(JSON.parse(saved)); } catch (e) {}
+                }
+                goToScreen('screen-enter-name');
+            }
+        }
+
+        function setupSlotOptions(count) {
+            const selectEl = document.getElementById('player-slot-select');
+            selectEl.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.innerText = `Player Key #${i + 1}`;
+                selectEl.appendChild(opt);
+            }
+        }
+
+        function startNewGameRound() {
+            if (isDownloadedPlayerGame()) {
+                alert("A new game must be created byことがあります / Host.");
+                return;
+            }
+
+            // Remember the current round's word before resetting the session.
+            // The next generated round will exclude this word only.
+            if (currentGameData && Number.isInteger(currentGameData.w)) {
+                lastWordIndex = currentGameData.w;
+            }
+
+            if (currentGameData && currentGameData.s != null) {
+                localStorage.removeItem('player_lock_' + currentGameData.s);
+                localStorage.removeItem('opened_game_' + currentGameData.s);
+            }
+
+            currentGameData = null;
+            goToScreen('screen-setup');
+        }
+
+        function parseUrlData() {
+            updatePlayerNavigationVisibility();
+            const hash = window.location.hash;
+            if (hash.includes('#game=')) {
+                const raw = hash.split('#game=')[1].split('-');
+                if (raw.length === 4) {
+                    const roomSeed = raw[3];
+                    if (localStorage.getItem('opened_game_' + roomSeed)) {
+                        const saved = localStorage.getItem('player_lock_' + roomSeed);
+                        if (saved) {
+                            const p = JSON.parse(saved);
+                            currentGameData = {w: parseInt(raw[0]), imp: parseInt(raw[1]), c: parseInt(raw[2]), s: parseInt(roomSeed)};
+                            setupSlotOptions(currentGameData.c);
+                            enforcePlayerLockUI(p);
+                            revealLockedRole(p.name, p.slot, p);
+                            return;
+                        }
+                        goToScreen('screen-already-opened');
+                        return;
+                    }
+                    currentGameData = { w: parseInt(raw[0]), imp: parseInt(raw[1]), c: parseInt(raw[2]), s: parseInt(roomSeed) };
+                    setupSlotOptions(currentGameData.c);
+                    goToScreen('screen-enter-name');
+                }
+            }
+        }
+
+        window.addEventListener('load', parseUrlData);
+        window.addEventListener('hashchange', parseUrlData);
+
+        function revealLockedRole(nameInput, selectedSlot, lockedRecord) {
+            if (!currentGameData) return;
+            const secretWord = lockedRecord && lockedRecord.secretWord != null ? lockedRecord.secretWord : GAME_WORDS[currentGameData.w % GAME_WORDS.length];
+            const isImpostor = lockedRecord && typeof lockedRecord.isImpostor === 'boolean' ? lockedRecord.isImpostor : (selectedSlot === currentGameData.imp);
+
+            document.getElementById('player-own-name').innerText = nameInput;
+            const titleEl = document.getElementById('player-role-title');
+            const descEl = document.getElementById('player-desc-text');
+            const secretEl = document.getElementById('player-secret-word');
+
+            if (isImpostor) {
+                titleEl.innerText = "YOU ARE THE IMPOSTOR!";
+                titleEl.style.color = "var(--accent-pink)";
+                descEl.innerText = "You have no secret word!";
+                secretEl.innerText = "Blend in and pretend to know the word!";
+            } else {
+                titleEl.innerText = "CREWMATE";
+                titleEl.style.color = "var(--accent-neon)";
+                descEl.innerText = "Your secret word is:";
+                secretEl.innerText = secretWord;
+            }
+            goToScreen('screen-player-role');
+        }
+
+        function joinAndRevealRole() {
+            const nameInputEl = document.getElementById('player-name-input');
+            const slotSelectEl = document.getElementById('player-slot-select');
+            if (!currentGameData) return;
+
+            const roomSeed = currentGameData.s;
+            const lockKey = 'player_lock_' + roomSeed;
+            const saved = localStorage.getItem(lockKey);
+            if (saved) {
+                const locked = JSON.parse(saved);
+                enforcePlayerLockUI(locked);
+                localStorage.setItem('opened_game_' + roomSeed, 'true');
+                revealLockedRole(locked.name, locked.slot, locked);
+                return;
+            }
+
+            const nameInput = nameInputEl.value.trim();
+            const selectedSlot = parseInt(slotSelectEl.value);
+            if (!nameInput) {
+                alert("Please enter your name!");
+                return;
+            }
+
+            const isImpostor = (selectedSlot === currentGameData.imp);
+            const secretWord = isImpostor ? "Blend in and pretend to know the word!" : GAME_WORDS[currentGameData.w % GAME_WORDS.length];
+            const lockRecord = { session: roomSeed, name: nameInput, slot: selectedSlot, isImpostor: isImpostor, role: isImpostor ? "IMPOSTOR" : "CREWMATE", secretWord: secretWord };
+
+            localStorage.setItem(lockKey, JSON.stringify(lockRecord));
+            localStorage.setItem('opened_game_' + roomSeed, 'true');
+            enforcePlayerLockUI(lockRecord);
+            revealLockedRole(nameInput, selectedSlot, lockRecord);
+        }
+
+        function enforcePlayerLockUI(locked) {
+            const nameInputEl = document.getElementById('player-name-input');
+            const slotSelectEl = document.getElementById('player-slot-select');
+            if (!locked || !nameInputEl || !slotSelectEl) return;
+            nameInputEl.value = locked.name;
+            nameInputEl.readOnly = true;
+            slotSelectEl.value = String(locked.slot);
+            slotSelectEl.disabled = true;
+        }
+    </script>
+</body>
+</html>
